@@ -1,0 +1,718 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>eWeighbridge Reports API</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: reference manual. Sticky section index on the left (desktop), one reading column, code and tables in their own scroll boxes. */
+:root {
+  --bg: #fbf9f8;
+  --surface: #ffffff;
+  --fg: #1e1a19;
+  --muted: #6b6261;
+  --line: #e8e2e0;
+  --accent: #c41a20;
+  --accent-soft: #fbecec;
+  --code-bg: #f4f0ef;
+  --code-fg: #2b2524;
+  --ok: #1f7a4a;
+  --ok-soft: #e6f3ec;
+  --warn: #8a5a00;
+  --warn-soft: #fbf1dc;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  --radius: 8px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141111; --surface: #1c1817; --fg: #ece6e5; --muted: #a59b99; --line: #322b2a;
+    --accent: #ff6a6e; --accent-soft: #3a1c1d; --code-bg: #211c1b; --code-fg: #e9e2e0;
+    --ok: #6fd39c; --ok-soft: #173024; --warn: #f0be5a; --warn-soft: #33270f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141111; --surface: #1c1817; --fg: #ece6e5; --muted: #a59b99; --line: #322b2a;
+  --accent: #ff6a6e; --accent-soft: #3a1c1d; --code-bg: #211c1b; --code-fg: #e9e2e0;
+  --ok: #6fd39c; --ok-soft: #173024; --warn: #f0be5a; --warn-soft: #33270f;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 15.5px;
+  line-height: 1.6;
+  padding-inline: 20px;
+  padding-block: 0 64px;
+}
+a { color: var(--accent); text-underline-offset: 2px; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px;
+}
+code, pre, .mono { font-family: var(--font-mono); font-size: 0.86em; }
+:not(pre) > code {
+  background: var(--code-bg); color: var(--code-fg);
+  padding: 0.1em 0.38em; border-radius: 4px;
+}
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.15; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 2.9rem); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.6rem; font-weight: 600; }
+h3 { font-size: 1.12rem; font-weight: 600; }
+p { margin: 0; }
+
+.shell { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 56px; }
+@media (max-width: 880px) { .shell { grid-template-columns: minmax(0, 1fr); gap: 0; } .toc { display: none; } }
+
+.toc { position: sticky; top: env(safe-area-inset-top, 0px); align-self: start; padding-top: 48px; }
+.toc p { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; font-weight: 600; }
+.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; border-left: 1px solid var(--line); }
+.toc a { display: block; padding: 4px 0 4px 14px; margin-left: -1px; border-left: 2px solid transparent; color: var(--muted); text-decoration: none; font-size: 0.92rem; }
+.toc a:hover { color: var(--fg); border-left-color: var(--accent); }
+
+main { min-width: 0; display: grid; gap: 64px; padding-top: 48px; }
+section { display: grid; gap: 18px; scroll-margin-top: 24px; min-width: 0; }
+.prose { max-width: 68ch; display: grid; gap: 12px; }
+.muted { color: var(--muted); }
+
+.masthead { display: grid; gap: 18px; padding-bottom: 8px; }
+.eyebrow { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.eyebrow .mark { color: var(--accent); }
+.lead { font-size: 1.12rem; max-width: 60ch; color: var(--fg); }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); overflow: hidden; margin: 0; }
+.facts div { padding: 14px 16px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); margin: 0 -1px -1px 0; min-width: 0; }
+.facts dt { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.facts dd { margin: 4px 0 0; font-weight: 500; overflow-wrap: anywhere; }
+
+.codebox { position: relative; background: var(--code-bg); border: 1px solid var(--line); border-radius: var(--radius); min-width: 0; }
+.codebox .label { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 10px 8px 14px; border-bottom: 1px solid var(--line); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.codebox pre { margin: 0; padding: 14px; overflow-x: auto; color: var(--code-fg); line-height: 1.55; font-size: 0.83rem; }
+.copy { font: inherit; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: 5px; padding: 3px 9px; cursor: pointer; }
+.copy:hover { border-color: var(--accent); color: var(--accent); }
+.tok-k { color: var(--accent); }
+.tok-s { color: var(--ok); }
+.tok-c { color: var(--muted); }
+
+.method { display: inline-block; font-family: var(--font-mono); font-size: 0.78rem; font-weight: 500; background: var(--accent); color: var(--surface); border-radius: 4px; padding: 1px 7px; margin-right: 8px; }
+
+.note { border: 1px solid var(--line); border-left: 3px solid var(--warn); background: var(--warn-soft); border-radius: 6px; padding: 12px 14px; max-width: 68ch; }
+.note strong { color: var(--warn); }
+
+/* Filter reference */
+.filters { display: grid; border-top: 1px solid var(--line); }
+.filter { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 8px 28px; padding: 22px 0; border-bottom: 1px solid var(--line); }
+@media (max-width: 640px) { .filter { grid-template-columns: minmax(0, 1fr); } }
+.filter-name { display: grid; gap: 6px; align-content: start; }
+.filter-name code { font-size: 1rem; font-weight: 500; background: none; padding: 0; color: var(--fg); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: 0.7rem; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 600; border-radius: 999px; padding: 1px 8px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+.filter-body { display: grid; gap: 10px; min-width: 0; max-width: 68ch; }
+.filter-body dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 14px; margin: 0; font-size: 0.92rem; }
+@media (max-width: 420px) { .filter-body dl { grid-template-columns: minmax(0, 1fr); gap: 0; } .filter-body dd { margin-bottom: 6px; } }
+.filter-body dt { color: var(--muted); }
+.filter-body dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.filter-body ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+
+/* Tables */
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; background: var(--bg); white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td:first-child { white-space: nowrap; }
+td { min-width: 120px; }
+tr.group td { background: var(--bg); font-family: var(--font-display); font-weight: 600; font-size: 0.82rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.type { font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
+
+/* Weight equation */
+.equation { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; font-variant-numeric: tabular-nums; }
+.term { border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 10px 14px; display: grid; gap: 2px; min-width: 0; }
+.term b { font-family: var(--font-display); font-size: 1.35rem; font-weight: 600; }
+.term span { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); }
+.term.result { border-color: var(--accent); background: var(--accent-soft); }
+.op { align-self: center; font-family: var(--font-display); font-size: 1.4rem; color: var(--muted); padding: 0 2px; }
+
+/* Request builder */
+.builder { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 20px; display: grid; gap: 18px; min-width: 0; }
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px 16px; }
+.field { display: grid; gap: 5px; min-width: 0; }
+.field label { font-size: 0.8rem; font-weight: 600; }
+.field input, .field select { font: inherit; font-size: 0.92rem; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 7px 10px; width: 100%; min-width: 0; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg button { font: inherit; font-size: 0.85rem; background: var(--bg); color: var(--muted); border: 0; padding: 6px 14px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.builder-foot { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+.hint { font-size: 0.85rem; color: var(--warn); }
+
+.status-list { display: grid; gap: 8px; }
+.status-row { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 14px; align-items: baseline; }
+@media (max-width: 520px) { .status-row { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+.pill { display: inline-block; font-size: 0.78rem; font-weight: 600; padding: 1px 10px; border-radius: 999px; }
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.pill.wait { background: var(--warn-soft); color: var(--warn); }
+.pill.cancel { background: var(--accent-soft); color: var(--accent); }
+
+footer { border-top: 1px solid var(--line); padding-top: 18px; font-size: 0.85rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; }
+
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+
+<div class="shell">
+  <nav class="toc" aria-label="Sections">
+    <p>Contents</p>
+    <ol>
+      <li><a href="#endpoint">Endpoint</a></li>
+      <li><a href="#auth">Authentication</a></li>
+      <li><a href="#filters">Filters</a></li>
+      <li><a href="#builder">Request builder</a></li>
+      <li><a href="#pagination">Pagination</a></li>
+      <li><a href="#response">Response</a></li>
+      <li><a href="#fields">Record fields</a></li>
+      <li><a href="#examples">Examples</a></li>
+      <li><a href="#errors">Errors</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="masthead">
+      <div class="eyebrow"><span class="mark">eWeighbridge</span><span>Client API</span><span>Version 1</span></div>
+      <h1>Weighment Reports API</h1>
+      <p class="lead">Fetch your weighment tickets as JSON. Filter by date, status, free text or any custom field your sites record, and page through the results.</p>
+      <dl class="facts">
+        <div><dt>Method</dt><dd>POST</dd></div>
+        <div><dt>Format</dt><dd>JSON</dd></div>
+        <div><dt>Auth header</dt><dd><code>x-client-id</code></dd></div>
+        <div><dt>Page size</dt><dd>100 default, 1000 max</dd></div>
+        <div><dt>Order</dt><dd>Newest first</dd></div>
+      </dl>
+    </header>
+
+    <section id="endpoint">
+      <h2>Endpoint</h2>
+      <div class="codebox">
+        <div class="label"><span>Request URL</span><button class="copy" type="button" data-copy="url-text">Copy</button></div>
+        <pre id="url-text"><span class="method">POST</span>https://workflow.kalpanix.com/webhook/eweighbridge/client/reports</pre>
+      </div>
+      <div class="prose">
+        <p>Only <code>POST</code> is accepted. Send filters either in the query string or as a JSON body with <code>Content-Type: application/json</code>. You can mix the two; when the same filter appears in both, the query string value is used.</p>
+        <p>Every filter is optional. A request with no filters returns your most recent 100 weighments.</p>
+      </div>
+    </section>
+
+    <section id="auth">
+      <h2>Authentication</h2>
+      <div class="prose">
+        <p>Send your client id in the <code>x-client-id</code> header on every request. Kalpanix issues this id, and it decides which weighbridges' data you receive.</p>
+      </div>
+      <div class="codebox">
+        <div class="label"><span>Header</span></div>
+        <pre>x-client-id: YOUR-CLIENT-ID</pre>
+      </div>
+      <div class="note">
+        <p><strong>Keep the client id secret.</strong> Anyone who has it can read your weighment records. Call the API from your own server, and don't embed the id in a website or mobile app that runs on other people's devices. If it leaks, ask Kalpanix for a new one.</p>
+      </div>
+      <div class="prose">
+        <p class="muted">If the header is missing or the id isn't recognised, the request still succeeds but returns no records (<code>total_records: 0</code>). When you get an unexpectedly empty result, check the header first.</p>
+      </div>
+    </section>
+
+    <section id="filters">
+      <h2>Filters</h2>
+      <div class="prose">
+        <p>All filters are combined with AND, so each one you add narrows the result. Results are always sorted by weighment date, newest first; tickets on the same date are ordered most recently created first.</p>
+      </div>
+
+      <div class="filters">
+        <article class="filter" id="f-from">
+          <div class="filter-name"><code>from</code><div class="chips"><span class="chip">Optional</span><span class="chip">Date</span></div></div>
+          <div class="filter-body">
+            <p>Earliest weighment date to include. The date is inclusive.</p>
+            <dl>
+              <dt>Format</dt><dd><code>YYYY-MM-DD</code></dd>
+              <dt>Example</dt><dd><code>from=2026-09-01</code></dd>
+              <dt>Matches on</dt><dd><code>weighment_date</code>, the business date printed on the ticket</dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="filter" id="f-to">
+          <div class="filter-name"><code>to</code><div class="chips"><span class="chip">Optional</span><span class="chip">Date</span></div></div>
+          <div class="filter-body">
+            <p>Latest weighment date to include. The date is inclusive, so <code>to=2026-09-30</code> includes every ticket dated 30 September.</p>
+            <dl>
+              <dt>Format</dt><dd><code>YYYY-MM-DD</code></dd>
+              <dt>Example</dt><dd><code>to=2026-09-30</code></dd>
+              <dt>One day</dt><dd>Send the same date in both: <code>from=2026-09-15&amp;to=2026-09-15</code></dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="filter" id="f-status">
+          <div class="filter-name"><code>status</code><div class="chips"><span class="chip">Optional</span><span class="chip">Text</span></div></div>
+          <div class="filter-body">
+            <p>Ticket status. Case-insensitive, so <code>completed</code> and <code>Completed</code> are the same.</p>
+            <div class="status-list">
+              <div class="status-row"><span><span class="pill ok">Completed</span></span><span>Both weighments recorded. Net weight is set.</span></div>
+              <div class="status-row"><span><span class="pill wait">Pending</span></span><span>Vehicle weighed once; the second weighment is still to come. Net weight is <code>null</code>.</span></div>
+              <div class="status-row"><span><span class="pill cancel">Cancelled</span></span><span>Ticket voided. The <code>cancellation</code> object says when, by whom and why.</span></div>
+            </div>
+            <dl>
+              <dt>Wildcard</dt><dd><code>%</code> matches any text, e.g. <code>status=%cancel%</code></dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="filter" id="f-q">
+          <div class="filter-name"><code>q</code><div class="chips"><span class="chip">Optional</span><span class="chip">Text</span></div></div>
+          <div class="filter-body">
+            <p>Free-text search. Returns tickets where any of these contain the text, ignoring case:</p>
+            <ul>
+              <li>ticket number</li>
+              <li>vehicle number</li>
+              <li>party, station and operator names</li>
+              <li>custom field names and values</li>
+            </ul>
+            <dl>
+              <dt>Example</dt><dd><code>q=OD 02</code> (URL-encoded: <code>q=OD%2002</code>)</dd>
+              <dt>Spaces</dt><dd>Matched exactly as stored. <code>OD 02</code> finds <code>OD 02 AA 3354</code>; <code>OD02</code> does not.</dd>
+              <dt>Wildcards</dt><dd><code>%</code> matches any text and <code>_</code> any single character</dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="filter" id="f-field">
+          <div class="filter-name"><code>field</code><div class="chips"><span class="chip">Optional</span><span class="chip">Text</span><span class="chip">Pairs with value</span></div></div>
+          <div class="filter-body">
+            <p>Name of a custom field to filter on, such as <code>Material</code> or <code>Transporter</code>. Case-insensitive.</p>
+            <p class="muted">Custom fields are set up per site, so the names differ between customers. Look at <code>custom_fields</code> in any record to see the names your sites use.</p>
+            <dl>
+              <dt>Example</dt><dd><code>field=Material</code></dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="filter" id="f-value">
+          <div class="filter-name"><code>value</code><div class="chips"><span class="chip">Optional</span><span class="chip">Text</span><span class="chip">Pairs with field</span></div></div>
+          <div class="filter-body">
+            <p>The value that custom field must have. It matches the whole value, ignoring case: <code>value=coal</code> matches <code>Coal</code> but not <code>Coal Fines</code>.</p>
+            <dl>
+              <dt>Example</dt><dd><code>field=Material&amp;value=Coal</code></dd>
+              <dt>Partial match</dt><dd>Add <code>%</code>: <code>value=Coal%</code> matches <code>Coal</code> and <code>Coal Fines</code></dd>
+              <dt>Rule</dt><dd>Send <code>field</code> and <code>value</code> together. If only one of them is sent, both are ignored.</dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="filter" id="f-page">
+          <div class="filter-name"><code>page</code><div class="chips"><span class="chip">Optional</span><span class="chip">Integer</span></div></div>
+          <div class="filter-body">
+            <p>Which page of results to return, starting at 1.</p>
+            <dl>
+              <dt>Default</dt><dd><code>1</code></dd>
+              <dt>Limits</dt><dd>Values below 1 are treated as 1. A page past the last one returns an empty <code>records</code> list.</dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="filter" id="f-pagesize">
+          <div class="filter-name"><code>pageSize</code><div class="chips"><span class="chip">Optional</span><span class="chip">Integer</span></div></div>
+          <div class="filter-body">
+            <p>How many records to return per page.</p>
+            <dl>
+              <dt>Default</dt><dd><code>100</code></dd>
+              <dt>Limits</dt><dd>1 to 1000. Larger values are reduced to 1000; check <code>page_size</code> in the response for the size actually used.</dd>
+              <dt>Spelling</dt><dd>Case-sensitive: <code>pageSize</code>, not <code>pagesize</code></dd>
+            </dl>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="builder">
+      <h2>Request builder</h2>
+      <div class="prose"><p>Fill in the filters you need and copy the command. Nothing is sent from this page.</p></div>
+      <form class="builder" id="builder-form" autocomplete="off">
+        <div class="fields">
+          <div class="field"><label for="b-client"><code>x-client-id</code></label><input id="b-client" type="text" value="YOUR-CLIENT-ID" spellcheck="false"></div>
+          <div class="field"><label for="b-from"><code>from</code></label><input id="b-from" type="date" value="2026-09-01"></div>
+          <div class="field"><label for="b-to"><code>to</code></label><input id="b-to" type="date" value="2026-09-30"></div>
+          <div class="field"><label for="b-status"><code>status</code></label>
+            <select id="b-status"><option value="">Any</option><option value="Completed" selected>Completed</option><option value="Pending">Pending</option><option value="Cancelled">Cancelled</option></select>
+          </div>
+          <div class="field"><label for="b-q"><code>q</code></label><input id="b-q" type="text" placeholder="e.g. OD 02" spellcheck="false"></div>
+          <div class="field"><label for="b-field"><code>field</code></label><input id="b-field" type="text" placeholder="e.g. Material" spellcheck="false"></div>
+          <div class="field"><label for="b-value"><code>value</code></label><input id="b-value" type="text" placeholder="e.g. Coal" spellcheck="false"></div>
+          <div class="field"><label for="b-page"><code>page</code></label><input id="b-page" type="number" min="1" step="1" value="1"></div>
+          <div class="field"><label for="b-size"><code>pageSize</code></label><input id="b-size" type="number" min="1" max="1000" step="1" value="100"></div>
+        </div>
+        <div class="builder-foot">
+          <div class="seg" role="group" aria-label="Send filters as">
+            <button type="button" id="mode-query" aria-pressed="true">Query string</button>
+            <button type="button" id="mode-body" aria-pressed="false">JSON body</button>
+          </div>
+          <span class="hint" id="builder-hint" aria-live="polite"></span>
+        </div>
+        <div class="codebox">
+          <div class="label"><span>cURL</span><button class="copy" type="button" data-copy="builder-out">Copy</button></div>
+          <pre id="builder-out"></pre>
+        </div>
+      </form>
+    </section>
+
+    <section id="pagination">
+      <h2>Pagination</h2>
+      <div class="prose">
+        <p>Each response tells you how many records matched (<code>total_records</code>) and how many pages that makes at your page size (<code>total_pages</code>). To fetch everything, request page 1, then keep increasing <code>page</code> until you reach <code>total_pages</code>.</p>
+        <p>Use the same filters and page size on every page. For large exports, use <code>pageSize=1000</code> to reduce the number of calls.</p>
+      </div>
+      <div class="codebox">
+        <div class="label"><span>JavaScript (Node 18+)</span><button class="copy" type="button" data-copy="code-paginate">Copy</button></div>
+<pre id="code-paginate"><span class="tok-k">const</span> URL = <span class="tok-s">"https://workflow.kalpanix.com/webhook/eweighbridge/client/reports"</span>;
+
+<span class="tok-k">async function</span> fetchAll(filters) {
+  <span class="tok-k">const</span> records = [];
+  <span class="tok-k">let</span> page = 1, totalPages = 1;
+  <span class="tok-k">do</span> {
+    <span class="tok-k">const</span> res = <span class="tok-k">await</span> fetch(URL, {
+      method: <span class="tok-s">"POST"</span>,
+      headers: {
+        <span class="tok-s">"Content-Type"</span>: <span class="tok-s">"application/json"</span>,
+        <span class="tok-s">"x-client-id"</span>: process.env.EWB_CLIENT_ID,
+      },
+      body: JSON.stringify({ ...filters, page, pageSize: 1000 }),
+    });
+    <span class="tok-k">if</span> (!res.ok) <span class="tok-k">throw new</span> Error(<span class="tok-s">`Request failed: ${res.status}`</span>);
+    <span class="tok-k">const</span> data = <span class="tok-k">await</span> res.json();
+    records.push(...data.records);
+    totalPages = data.total_pages;
+    page++;
+  } <span class="tok-k">while</span> (page &lt;= totalPages);
+  <span class="tok-k">return</span> records;
+}
+
+<span class="tok-c">// All completed tickets for September 2026</span>
+<span class="tok-k">const</span> tickets = <span class="tok-k">await</span> fetchAll({ from: <span class="tok-s">"2026-09-01"</span>, to: <span class="tok-s">"2026-09-30"</span>, status: <span class="tok-s">"Completed"</span> });</pre>
+      </div>
+    </section>
+
+    <section id="response">
+      <h2>Response</h2>
+      <div class="prose"><p>A successful call returns HTTP <code>200</code> with one JSON object. <code>records</code> is an empty list when nothing matches.</p></div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>page</code></td><td class="type">integer</td><td>Page returned, starting at 1</td></tr>
+            <tr><td><code>page_size</code></td><td class="type">integer</td><td>Records per page actually used (after the 1–1000 limit)</td></tr>
+            <tr><td><code>total_records</code></td><td class="type">integer</td><td>Records matching your filters, across all pages</td></tr>
+            <tr><td><code>total_pages</code></td><td class="type">integer</td><td>Pages at this page size; <code>0</code> when nothing matches</td></tr>
+            <tr><td><code>generated_at</code></td><td class="type">string</td><td>When the response was produced, UTC, e.g. <code>2026-10-09T06:47:28Z</code></td></tr>
+            <tr><td><code>records</code></td><td class="type">array</td><td>The weighment tickets on this page. See <a href="#fields">Record fields</a>.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="codebox">
+        <div class="label"><span>Example response (illustrative values)</span><button class="copy" type="button" data-copy="code-response">Copy</button></div>
+<pre id="code-response">{
+  <span class="tok-s">"page"</span>: 1,
+  <span class="tok-s">"page_size"</span>: 100,
+  <span class="tok-s">"total_records"</span>: 1,
+  <span class="tok-s">"total_pages"</span>: 1,
+  <span class="tok-s">"generated_at"</span>: <span class="tok-s">"2026-10-09T06:47:28Z"</span>,
+  <span class="tok-s">"records"</span>: [
+    {
+      <span class="tok-s">"id"</span>: <span class="tok-s">"3f2c9a10-5b7e-4c1d-9a8f-2e6b1d4c7a90"</span>,
+      <span class="tok-s">"ticket_no"</span>: <span class="tok-s">"WB/15/09/100001"</span>,
+      <span class="tok-s">"status"</span>: <span class="tok-s">"Completed"</span>,
+      <span class="tok-s">"weighment_date"</span>: <span class="tok-s">"2026-09-15"</span>,
+      <span class="tok-s">"station"</span>: <span class="tok-s">"Main Gate"</span>,
+      <span class="tok-s">"party"</span>: <span class="tok-s">"Sample Traders"</span>,
+      <span class="tok-s">"shift"</span>: <span class="tok-s">"Afternoon Shift"</span>,
+      <span class="tok-s">"operator"</span>: <span class="tok-s">"R. Das"</span>,
+      <span class="tok-s">"vehicle"</span>: { <span class="tok-s">"number"</span>: <span class="tok-s">"OD 02 AA 3354"</span>, <span class="tok-s">"type"</span>: <span class="tok-s">"Truck"</span> },
+      <span class="tok-s">"weights"</span>: {
+        <span class="tok-s">"entry_kg"</span>: 5000, <span class="tok-s">"entry_at"</span>: <span class="tok-s">"2026-09-15T16:46:28.897858+00:00"</span>,
+        <span class="tok-s">"gross_kg"</span>: 8000, <span class="tok-s">"gross_at"</span>: <span class="tok-s">"2026-09-15T16:52:47.775061+00:00"</span>,
+        <span class="tok-s">"tare_kg"</span>:  5000, <span class="tok-s">"tare_at"</span>:  <span class="tok-s">"2026-09-15T16:46:28.897858+00:00"</span>,
+        <span class="tok-s">"tare_source"</span>: <span class="tok-s">"Weighed"</span>,
+        <span class="tok-s">"exit_kg"</span>:  8000, <span class="tok-s">"exit_at"</span>:  <span class="tok-s">"2026-09-15T16:52:47.775061+00:00"</span>,
+        <span class="tok-s">"net_kg"</span>: 2900
+      },
+      <span class="tok-s">"turnaround_min"</span>: 6,
+      <span class="tok-s">"bags"</span>: { <span class="tok-s">"type"</span>: { <span class="tok-s">"id"</span>: <span class="tok-s">"8d41e2b7-0c3a-4f6e-b5d2-91a7c3e0f4b8"</span>, <span class="tok-s">"name"</span>: <span class="tok-s">"Jute Bag"</span> }, <span class="tok-s">"count"</span>: 100, <span class="tok-s">"deductionKg"</span>: 100 },
+      <span class="tok-s">"service_charge"</span>: { <span class="tok-s">"amount"</span>: 50, <span class="tok-s">"currency"</span>: <span class="tok-s">"INR"</span> },
+      <span class="tok-s">"company"</span>: {
+        <span class="tok-s">"id"</span>: <span class="tok-s">"b7e4d2a1-6c9f-4e3b-8a0d-5f1c2e7b9a34"</span>,
+        <span class="tok-s">"name"</span>: <span class="tok-s">"Sample Weighbridge Pvt Ltd"</span>,
+        <span class="tok-s">"address"</span>: <span class="tok-s">"Plot 12, Industrial Estate, Angul, Odisha"</span>,
+        <span class="tok-s">"gstIn"</span>: <span class="tok-s">"21AAAAA0000A1Z5"</span>,
+        <span class="tok-s">"licenseNo"</span>: <span class="tok-s">"WB-1234"</span>
+      },
+      <span class="tok-s">"cancellation"</span>: <span class="tok-k">null</span>,
+      <span class="tok-s">"custom_fields"</span>: {
+        <span class="tok-s">"Material"</span>: <span class="tok-s">"Coal"</span>,
+        <span class="tok-s">"Transporter"</span>: <span class="tok-s">"Sample Logistics"</span>,
+        <span class="tok-s">"DO / Challan No"</span>: <span class="tok-s">"150"</span>
+      },
+      <span class="tok-s">"created_at"</span>: <span class="tok-s">"2026-09-15T16:46:36.617705+00:00"</span>,
+      <span class="tok-s">"updated_at"</span>: <span class="tok-s">"2026-09-15T16:53:21.486932+00:00"</span>
+    }
+  ]
+}</pre>
+      </div>
+    </section>
+
+    <section id="fields">
+      <h2>Record fields</h2>
+      <div class="prose">
+        <p>Weights are in kilograms and returned as JSON numbers. Timestamps are ISO 8601 with a UTC offset (<code>+00:00</code>); convert them to your local time zone for display. Any field can be <code>null</code> when the site didn't record it.</p>
+      </div>
+
+      <h3>How the weights relate</h3>
+      <div class="equation" role="img" aria-label="net_kg equals gross_kg minus tare_kg minus bags.deductionKg, for example 8000 minus 5000 minus 100 equals 2900">
+        <div class="term"><b>8,000</b><span>gross_kg</span></div>
+        <div class="op">−</div>
+        <div class="term"><b>5,000</b><span>tare_kg</span></div>
+        <div class="op">−</div>
+        <div class="term"><b>100</b><span>bags.deductionKg</span></div>
+        <div class="op">=</div>
+        <div class="term result"><b>2,900</b><span>net_kg</span></div>
+      </div>
+      <div class="prose"><p class="muted">Gross is the loaded vehicle, tare the empty vehicle. <code>entry_kg</code> and <code>exit_kg</code> are the readings in the order they were taken: a vehicle bringing material in is heavier on entry, one taking material out is heavier on exit. Use <code>net_kg</code> as the billable weight.</p></div>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr class="group"><td colspan="3">Ticket</td></tr>
+            <tr><td><code>id</code></td><td class="type">string (uuid)</td><td>Unique, permanent id of the weighment. Use this as your key when storing records.</td></tr>
+            <tr><td><code>ticket_no</code></td><td class="type">string</td><td>Ticket number printed on the weighment slip</td></tr>
+            <tr><td><code>status</code></td><td class="type">string</td><td><code>Completed</code>, <code>Pending</code> or <code>Cancelled</code></td></tr>
+            <tr><td><code>weighment_date</code></td><td class="type">string (date)</td><td>Business date of the ticket, <code>YYYY-MM-DD</code>. This is the date the <code>from</code> and <code>to</code> filters use.</td></tr>
+            <tr><td><code>station</code></td><td class="type">string</td><td>Weighbridge station where the ticket was made</td></tr>
+            <tr><td><code>party</code></td><td class="type">string</td><td>Customer or supplier on the ticket</td></tr>
+            <tr><td><code>shift</code></td><td class="type">string</td><td>Shift the ticket was made in</td></tr>
+            <tr><td><code>operator</code></td><td class="type">string</td><td>Weighbridge operator who made the ticket</td></tr>
+
+            <tr class="group"><td colspan="3">Vehicle</td></tr>
+            <tr><td><code>vehicle.number</code></td><td class="type">string</td><td>Registration number as entered, with spaces</td></tr>
+            <tr><td><code>vehicle.type</code></td><td class="type">string</td><td>Vehicle type, e.g. Truck or Tractor</td></tr>
+
+            <tr class="group"><td colspan="3">Weights</td></tr>
+            <tr><td><code>weights.entry_kg</code></td><td class="type">number</td><td>First reading, when the vehicle came in</td></tr>
+            <tr><td><code>weights.entry_at</code></td><td class="type">string (timestamp)</td><td>Time of the first reading</td></tr>
+            <tr><td><code>weights.exit_kg</code></td><td class="type">number</td><td>Second reading, when the vehicle went out. <code>null</code> while the ticket is Pending.</td></tr>
+            <tr><td><code>weights.exit_at</code></td><td class="type">string (timestamp)</td><td>Time of the second reading</td></tr>
+            <tr><td><code>weights.gross_kg</code></td><td class="type">number</td><td>Loaded vehicle weight</td></tr>
+            <tr><td><code>weights.gross_at</code></td><td class="type">string (timestamp)</td><td>When the gross weight was taken</td></tr>
+            <tr><td><code>weights.tare_kg</code></td><td class="type">number</td><td>Empty vehicle weight</td></tr>
+            <tr><td><code>weights.tare_at</code></td><td class="type">string (timestamp)</td><td>When the tare weight was taken</td></tr>
+            <tr><td><code>weights.tare_source</code></td><td class="type">string</td><td>Where the tare came from, e.g. <code>Weighed</code> when the empty vehicle was put on the weighbridge</td></tr>
+            <tr><td><code>weights.net_kg</code></td><td class="type">number</td><td>Final net weight: gross − tare − bag deduction. <code>null</code> until both weighments are done.</td></tr>
+            <tr><td><code>turnaround_min</code></td><td class="type">integer</td><td>Minutes between first and second reading. <code>null</code> if either is missing.</td></tr>
+
+            <tr class="group"><td colspan="3">Bags, charges and issuer</td></tr>
+            <tr><td><code>bags</code></td><td class="type">object</td><td><code>null</code> when no bags were declared</td></tr>
+            <tr><td><code>bags.type.name</code></td><td class="type">string</td><td>Bag type, e.g. Jute Bag</td></tr>
+            <tr><td><code>bags.count</code></td><td class="type">number</td><td>Number of bags</td></tr>
+            <tr><td><code>bags.deductionKg</code></td><td class="type">number</td><td>Total weight deducted for the bags, already subtracted from <code>net_kg</code></td></tr>
+            <tr><td><code>service_charge</code></td><td class="type">object</td><td>Weighing fee: <code>amount</code> (number) and <code>currency</code> (e.g. <code>INR</code>). <code>null</code> if none.</td></tr>
+            <tr><td><code>company</code></td><td class="type">object</td><td>Company that issued the ticket: <code>id</code>, <code>name</code>, <code>address</code>, <code>gstIn</code>, <code>licenseNo</code>. Can be <code>null</code> on older tickets.</td></tr>
+
+            <tr class="group"><td colspan="3">Cancellation</td></tr>
+            <tr><td><code>cancellation</code></td><td class="type">object</td><td><code>null</code> unless the ticket was cancelled</td></tr>
+            <tr><td><code>cancellation.at</code></td><td class="type">string (timestamp)</td><td>When it was cancelled. Sent without a time zone suffix, but the time is UTC.</td></tr>
+            <tr><td><code>cancellation.by</code></td><td class="type">string</td><td>Who cancelled it</td></tr>
+            <tr><td><code>cancellation.reason.text</code></td><td class="type">string</td><td>Reason given at cancellation</td></tr>
+
+            <tr class="group"><td colspan="3">Custom fields</td></tr>
+            <tr><td><code>custom_fields</code></td><td class="type">object</td><td>Extra fields your sites record, as <code>{ "Field name": value }</code>. Names differ between customers and can be added over time, so don't assume a fixed set. Values come back as entered, usually as strings (for example <code>"150"</code>). An empty object <code>{}</code> means none were recorded.</td></tr>
+
+            <tr class="group"><td colspan="3">Record history</td></tr>
+            <tr><td><code>created_at</code></td><td class="type">string (timestamp)</td><td>When the ticket was first saved</td></tr>
+            <tr><td><code>updated_at</code></td><td class="type">string (timestamp)</td><td>Last change, e.g. second weighment, cancellation or an approved correction</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="examples">
+      <h2>Examples</h2>
+
+      <h3>One month of completed tickets (query string)</h3>
+      <div class="codebox">
+        <div class="label"><span>cURL</span><button class="copy" type="button" data-copy="ex-1">Copy</button></div>
+<pre id="ex-1">curl -X POST \
+  'https://workflow.kalpanix.com/webhook/eweighbridge/client/reports?from=2026-09-01&amp;to=2026-09-30&amp;status=Completed' \
+  -H 'x-client-id: YOUR-CLIENT-ID'</pre>
+      </div>
+
+      <h3>Coal tickets for one vehicle (JSON body)</h3>
+      <div class="codebox">
+        <div class="label"><span>cURL</span><button class="copy" type="button" data-copy="ex-2">Copy</button></div>
+<pre id="ex-2">curl -X POST 'https://workflow.kalpanix.com/webhook/eweighbridge/client/reports' \
+  -H 'x-client-id: YOUR-CLIENT-ID' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "from": "2026-09-01",
+    "to": "2026-09-30",
+    "field": "Material",
+    "value": "Coal",
+    "q": "OD 02 AA 3354"
+  }'</pre>
+      </div>
+
+      <h3>Cancelled tickets, second page of 50</h3>
+      <div class="codebox">
+        <div class="label"><span>cURL</span><button class="copy" type="button" data-copy="ex-3">Copy</button></div>
+<pre id="ex-3">curl -X POST \
+  'https://workflow.kalpanix.com/webhook/eweighbridge/client/reports?status=Cancelled&amp;page=2&amp;pageSize=50' \
+  -H 'x-client-id: YOUR-CLIENT-ID'</pre>
+      </div>
+
+      <h3>Python</h3>
+      <div class="codebox">
+        <div class="label"><span>requests</span><button class="copy" type="button" data-copy="ex-4">Copy</button></div>
+<pre id="ex-4"><span class="tok-k">import</span> os, requests
+
+resp = requests.post(
+    <span class="tok-s">"https://workflow.kalpanix.com/webhook/eweighbridge/client/reports"</span>,
+    headers={<span class="tok-s">"x-client-id"</span>: os.environ[<span class="tok-s">"EWB_CLIENT_ID"</span>]},
+    json={<span class="tok-s">"from"</span>: <span class="tok-s">"2026-09-01"</span>, <span class="tok-s">"to"</span>: <span class="tok-s">"2026-09-30"</span>, <span class="tok-s">"pageSize"</span>: 1000},
+    timeout=60,
+)
+resp.raise_for_status()
+data = resp.json()
+<span class="tok-k">print</span>(data[<span class="tok-s">"total_records"</span>], <span class="tok-s">"tickets"</span>)
+<span class="tok-k">for</span> t <span class="tok-k">in</span> data[<span class="tok-s">"records"</span>]:
+    <span class="tok-k">print</span>(t[<span class="tok-s">"ticket_no"</span>], t[<span class="tok-s">"vehicle"</span>][<span class="tok-s">"number"</span>], t[<span class="tok-s">"weights"</span>][<span class="tok-s">"net_kg"</span>])</pre>
+      </div>
+    </section>
+
+    <section id="errors">
+      <h2>Errors and empty results</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>What you see</th><th>Likely cause</th><th>What to do</th></tr></thead>
+          <tbody>
+            <tr><td><code>200</code>, <code>total_records: 0</code></td><td>No ticket matches the filters, or the <code>x-client-id</code> header is missing or wrong</td><td>Check the header, then widen the filters (dates, status, spelling of <code>field</code>)</td></tr>
+            <tr><td><code>200</code>, empty <code>records</code>,<br><code>total_records</code> above 0</td><td><code>page</code> is past the last page</td><td>Request a page from 1 to <code>total_pages</code></td></tr>
+            <tr><td><code>500</code></td><td>A filter has the wrong format, e.g. <code>from=01-09-2026</code> or <code>page=two</code></td><td>Send dates as <code>YYYY-MM-DD</code> and <code>page</code> / <code>pageSize</code> as whole numbers</td></tr>
+            <tr><td><code>404</code></td><td>Wrong URL, or a method other than POST</td><td>Use <code>POST</code> and the exact URL above</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="prose"><p class="muted">If a request keeps failing with valid filters, send Kalpanix support the time of the request and the filters you used. Don't include your client id in emails or tickets.</p></div>
+    </section>
+
+    <footer>
+      <span>eWeighbridge Weighment Reports API · Version 1</span>
+      <span>Kalpanix</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function () {
+  var URL_BASE = "https://workflow.kalpanix.com/webhook/eweighbridge/client/reports";
+  var mode = "query";
+  var ids = ["b-client", "b-from", "b-to", "b-status", "b-q", "b-field", "b-value", "b-page", "b-size"];
+  var out = document.getElementById("builder-out");
+  var hint = document.getElementById("builder-hint");
+  var btnQuery = document.getElementById("mode-query");
+  var btnBody = document.getElementById("mode-body");
+
+  function val(id) { return document.getElementById(id).value.trim(); }
+  function shellQuote(s) { return "'" + String(s).replace(/'/g, "'\\''") + "'"; }
+  function enc(s) { return encodeURIComponent(s).replace(/'/g, "%27"); }
+
+  function filters() {
+    var f = [];
+    if (val("b-from")) f.push(["from", val("b-from")]);
+    if (val("b-to")) f.push(["to", val("b-to")]);
+    if (val("b-status")) f.push(["status", val("b-status")]);
+    if (val("b-q")) f.push(["q", val("b-q")]);
+    if (val("b-field") && val("b-value")) { f.push(["field", val("b-field")]); f.push(["value", val("b-value")]); }
+    var page = parseInt(val("b-page"), 10);
+    var size = parseInt(val("b-size"), 10);
+    if (page > 1) f.push(["page", String(page)]);
+    if (size && size !== 100) f.push(["pageSize", String(Math.min(Math.max(size, 1), 1000))]);
+    return f;
+  }
+
+  function render() {
+    var f = filters();
+    var client = val("b-client") || "YOUR-CLIENT-ID";
+    var lines;
+    if (mode === "query") {
+      var qs = f.map(function (p) { return p[0] + "=" + enc(p[1]); }).join("&");
+      lines = [
+        "curl -X POST \\",
+        "  " + shellQuote(URL_BASE + (qs ? "?" + qs : "")) + " \\",
+        "  -H " + shellQuote("x-client-id: " + client)
+      ];
+    } else {
+      var body = {};
+      f.forEach(function (p) { body[p[0]] = (p[0] === "page" || p[0] === "pageSize") ? Number(p[1]) : p[1]; });
+      lines = [
+        "curl -X POST " + shellQuote(URL_BASE) + " \\",
+        "  -H " + shellQuote("x-client-id: " + client) + " \\",
+        "  -H 'Content-Type: application/json' \\",
+        "  -d " + shellQuote(JSON.stringify(body, null, 2))
+      ];
+    }
+    out.textContent = lines.join("\n");
+    var partial = (val("b-field") && !val("b-value")) || (!val("b-field") && val("b-value"));
+    hint.textContent = partial ? "Fill in both field and value, or neither." : "";
+  }
+
+  function setMode(m) {
+    mode = m;
+    btnQuery.setAttribute("aria-pressed", String(m === "query"));
+    btnBody.setAttribute("aria-pressed", String(m === "body"));
+    render();
+  }
+
+  ids.forEach(function (id) {
+    var el = document.getElementById(id);
+    el.addEventListener("input", render);
+    el.addEventListener("change", render);
+  });
+  btnQuery.addEventListener("click", function () { setMode("query"); });
+  btnBody.addEventListener("click", function () { setMode("body"); });
+  document.getElementById("builder-form").addEventListener("submit", function (e) { e.preventDefault(); });
+
+  function selectText(el) {
+    var range = document.createRange();
+    range.selectNodeContents(el);
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
+  document.querySelectorAll(".copy").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var target = document.getElementById(btn.getAttribute("data-copy"));
+      var text = target.textContent.replace(/^POST/, "").trim();
+      var done = function () {
+        btn.textContent = "Copied";
+        setTimeout(function () { btn.textContent = "Copy"; }, 1600);
+      };
+      try {
+        navigator.clipboard.writeText(text).then(done, function () { selectText(target); });
+      } catch (e) {
+        selectText(target);
+      }
+    });
+  });
+
+  render();
+})();
+</script>
+
+</body></html>
